@@ -1,0 +1,193 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+// Abstract Task class
+abstract class Task {
+    private String taskName;
+    private LocalDate dueDate;
+    private int priority;
+    private boolean isDone;
+
+    public Task(String taskName, LocalDate dueDate, int priority) {
+        this.taskName = taskName;
+        this.dueDate = dueDate;
+        this.priority = priority;
+        this.isDone = false;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public boolean isDone() {
+        return isDone;
+    }
+
+    public void setDone(boolean done) {
+        isDone = done;
+    }
+
+    // Abstract method for managing tasks
+    public abstract void manageTask();
+}
+
+// RegularTask class inherits from Task
+class RegularTask extends Task {
+    private boolean repetition;
+    private ArrayList<String> recurringDays;
+
+    public RegularTask(String taskName, LocalDate dueDate, int priority, boolean repetition, ArrayList<String> recurringDays) {
+        super(taskName, dueDate, priority);
+        this.repetition = repetition;
+        this.recurringDays = recurringDays;
+    }
+
+    @Override
+    public void manageTask() {
+        // Implement managing regular tasks
+    }
+}
+
+// RecurringTask class inherits from Task
+class RecurringTask extends Task {
+    private String recurrencePattern;
+    private LocalDate endDate;
+
+    public RecurringTask(String taskName, LocalDate dueDate, int priority, String recurrencePattern, LocalDate endDate) {
+        super(taskName, dueDate, priority);
+        this.recurrencePattern = recurrencePattern;
+        this.endDate = endDate;
+    }
+
+    @Override
+    public void manageTask() {
+        // Implement managing recurring tasks
+    }
+}
+
+// TaskManager class manages tasks
+class TaskManager {
+    private ArrayList<Task> tasks;
+
+    public TaskManager() {
+        this.tasks = new ArrayList<>();
+    }
+
+    public void addTask(Task task) {
+        tasks.add(task);
+    }
+
+    // Other methods for editing, deleting, and displaying tasks
+}
+
+// Main class extending Application for JavaFX
+public class TaskOrganizer extends Application {
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Task Organizer");
+
+        // Create GUI components
+        TextField taskNameField = new TextField();
+        DatePicker dueDatePicker = new DatePicker();
+        ComboBox<Integer> priorityComboBox = new ComboBox<>();
+        priorityComboBox.getItems().addAll(1, 2, 3, 4, 5);
+        CheckBox repetitionCheckBox = new CheckBox("Repetition");
+        TextArea recurringDaysTextArea = new TextArea();
+        TextField recurrencePatternField = new TextField();
+        DatePicker endDatePicker = new DatePicker();
+        Button addButton = new Button("Add Task");
+
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(10));
+        layout.getChildren().addAll(
+                new Label("Task Name:"),
+                taskNameField,
+                new Label("Due Date:"),
+                dueDatePicker,
+                new Label("Priority:"),
+                priorityComboBox,
+                repetitionCheckBox,
+                new Label("Recurring Days:"),
+                recurringDaysTextArea,
+                new Label("Recurrence Pattern:"),
+                recurrencePatternField,
+                new Label("End Date:"),
+                endDatePicker,
+                addButton
+        );
+
+        // Event handling for adding tasks
+        addButton.setOnAction(event -> {
+            // Get input from GUI components
+            String taskName = taskNameField.getText();
+            LocalDate dueDate = dueDatePicker.getValue();
+            int priority = priorityComboBox.getValue();
+            boolean repetition = repetitionCheckBox.isSelected();
+            ArrayList<String> recurringDays = new ArrayList<>();
+            if (repetition) {
+                String[] days = recurringDaysTextArea.getText().split(",");
+                for (String day : days) {
+                    recurringDays.add(day.trim());
+                }
+            }
+            String recurrencePattern = recurrencePatternField.getText();
+            LocalDate endDate = endDatePicker.getValue();
+
+            // Create task based on input
+            Task task;
+            if (repetition) {
+                task = new RegularTask(taskName, dueDate, priority, repetition, recurringDays);
+            } else {
+                task = new RecurringTask(taskName, dueDate, priority, recurrencePattern, endDate);
+            }
+
+            // Add task to TaskManager
+            TaskManager taskManager = new TaskManager();
+            taskManager.addTask(task);
+
+            // Clear input fields
+            taskNameField.clear();
+            dueDatePicker.setValue(null);
+            priorityComboBox.getSelectionModel().clearSelection();
+            repetitionCheckBox.setSelected(false);
+            recurringDaysTextArea.clear();
+            recurrencePatternField.clear();
+            endDatePicker.setValue(null);
+        });
+
+        Scene scene = new Scene(layout, 400, 500);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
